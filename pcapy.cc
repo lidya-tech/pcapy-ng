@@ -183,7 +183,14 @@ open_offline(PyObject *self, PyObject *args)
 
   pcap_t* pt;
 
-  pt = pcap_open_offline(filename, errbuff);
+  // pt = pcap_open_offline(filename, errbuff);
+  pt = pcap_open_offline_with_tstamp_precision(filename, PCAP_TSTAMP_PRECISION_NANO, errbuff);
+
+  if (pt) {
+    int precision = pcap_get_tstamp_precision(pt);
+    fprintf(stderr, "Timestamp precision: %d (%s)\n", precision,
+            precision == PCAP_TSTAMP_PRECISION_NANO ? "nano" : "micro");
+  }
   if(!pt)
     {
       PyErr_SetString(PcapError, errbuff);
@@ -251,7 +258,7 @@ PyDoc_STRVAR(pcap_doc,
 
 static struct PyModuleDef pcapy_module = {
 	PyModuleDef_HEAD_INIT,
-	"pcapy",      /* m_name */
+	"pcapy_ng",   /* m_name */
 	pcap_doc,     /* m_doc */
 	-1,           /* m_size */
 	pcap_methods, /* m_methods */
@@ -269,7 +276,7 @@ static char *pcap_doc =
 
 #if PY_MAJOR_VERSION >= 3
 PyMODINIT_FUNC
-PyInit_pcapy(void)
+PyInit_pcapy_ng(void)
 #else
 void
 initpcapy(void)
